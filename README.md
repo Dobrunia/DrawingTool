@@ -92,6 +92,9 @@ img.src = "1.png";
 ## Dependencies
 
 - **@codexteam/icons**: This package provides icons for the undo and redo buttons.
+- **typescript**
+- **tailwind**
+- **vite**
 
 ## License
 
