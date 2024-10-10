@@ -51,7 +51,7 @@ This project provides a simple, customizable drawing canvas with brush and blur 
 
 3. **Custom Cursor:**
 
-   - A custom cursor will appear on the canvas, reflecting the current brush size and color. This cursor is visible only within the canvas area.
+   - A custom cursor will appear on the canvas, reflecting the current brush size. This cursor is visible only within the canvas area.
 
 4. **Undo/Redo:**
 
