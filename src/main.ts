@@ -55,9 +55,9 @@ img.onload = function () {
 toolButtons.forEach((button) => {
   button.addEventListener("click", function () {
     toolButtons.forEach((btn) => btn.classList.remove("active"));
-    this.classList.add("active");
+    button.classList.add("active");
     currentTool =
-      (this.textContent?.toLowerCase() as "brush" | "blur") || "brush";
+      (button.textContent?.toLowerCase() as "brush" | "blur") || "brush";
     if (currentTool === "blur") {
       colorSelector.style.display = "none";
       //cursor.style.border = '2px solid rgba(255, 255, 255, 0.5)';
@@ -71,8 +71,8 @@ toolButtons.forEach((button) => {
 colorButtons.forEach((button) => {
   button.addEventListener("click", function () {
     colorButtons.forEach((btn) => btn.classList.remove("active"));
-    this.classList.add("active");
-    color = window.getComputedStyle(this).backgroundColor;
+    button.classList.add("active");
+    color = window.getComputedStyle(button).backgroundColor;
     //cursor.style.border = `2px solid ${color}`;
   });
 });
