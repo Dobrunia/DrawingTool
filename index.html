@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Drawing Tool</title>
+    <script type="module" crossorigin src="/assets/index-hY6FmIFo.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-WCSWlsiE.css">
+  </head>
+  <body>
+    <section class="drawing-section">
+      <div class="drawing-wrapper">
+        <!-- <img src="1.png" alt="" /> -->
+        <canvas id="drawingCanvas"></canvas>
+        <div class="controls">
+          <div class="control mt-[16px]">
+            <div class="control-name">Tool</div>
+            <div class="flex">
+              <button class="tool-btn bg-secondary border-border-color border-[1px] active">Brush</button>
+              <button class="tool-btn bg-secondary border-border-color border-[1px]">Blur</button>
+            </div>
+          </div>
+          <div class="control mt-[20px]">
+            <div class="control-name">Color</div>
+            <div class="color-selector">
+              <button class="color-btn bg-[#FF4C4C]"></button>
+              <button class="color-btn bg-[#FFE629]"></button>
+              <button class="color-btn bg-[#10F549]"></button>
+              <button class="color-btn bg-[#35A4FF]"></button>
+              <button class="color-btn bg-[#A467FF]"></button>
+              <button class="color-btn bg-[#000000] active"></button>
+              <button class="color-btn bg-[#FFFFFF]"></button>
+            </div>
+          </div>
+          <div class="control mt-[20px]">
+            <div class="control-name">Size</div>
+            <input class="brush-size" type="range" value="10" min="1" max="20"/>
+          </div>
+          <div class="control mt-[40px]">
+            <div class="mb-[16px] flex">
+              <button id="save" class="w-[58px] h-[36px] py-[8px] px-[12px] rounded-[8px] flex items-center justify-center mr-[12px] bg-blue text-[#FFFFFF]">Save</button>
+              <button id="undo" class="undo-redo"></button>
+              <button id="redo" class="undo-redo"></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </body>
+</html>
