@@ -1,0 +1,78 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  box-sizing: border-box;
+  @apply bg-body text-text-color
+}
+
+.drawing-section {
+  @apply w-screen h-screen flex items-center justify-center
+}
+
+.drawing-wrapper {
+  @apply w-[700px] min-h-[713px] bg-primary
+}
+
+.controls {
+  @apply w-full h-max flex flex-col items-center justify-center
+}
+
+.control {
+  @apply w-[270px] h-max flex flex-col items-start justify-center
+}
+
+.control-name {
+  @apply mb-[16px] font-bold
+}
+
+.tool-btn {
+  @apply w-max h-[36px] py-[8px] px-[12px] rounded-[8px] flex items-center justify-center mr-[12px]
+}
+
+.tool-btn.active {
+  @apply border-blue
+}
+
+.color-selector {
+  @apply w-max flex
+}
+
+.color-btn {
+  @apply w-[24px] h-[24px] rounded-[9px] mr-[12px]
+}
+
+.color-btn.active {
+  scale: 1.2;
+}
+
+.brush-size {
+  -webkit-appearance: none;
+  @apply w-[270px] bg-transparent
+}
+
+.brush-size::-webkit-slider-runnable-track {
+  @apply w-[270px] h-[4px] bg-track
+}
+
+.brush-size::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  @apply w-[20px] h-[20px] rounded-[50%] bg-text-color cursor-pointer mt-[-8px]
+}
+
+.brush-size::-moz-range-track {
+  @apply w-[270px] h-[4px] bg-track
+}
+
+.brush-size::-moz-range-thumb {
+  @apply w-[20px] h-[20px] rounded-[50%] bg-text-color cursor-pointer
+}
+
+.undo-redo {
+  @apply w-[36px] h-[36px] bg-secondary border-border-color border-[1px] flex items-center justify-center rounded-[8px] mr-[12px]
+}
+
+.undo-redo svg {
+  @apply w-[20px] h-[20px]
+}
