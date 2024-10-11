@@ -189,7 +189,7 @@ function averageColor(neighbors: number[][]): number[] {
 }
 
 // Алгоритм Рамера-Дугласа-Пекера
-function ramerDouglasPeucker(points: { x: number, y: number }[], epsilon: number) {
+function ramerDouglasPeucker(points: { x: number, y: number }[], epsilon: number): { x: number, y: number }[] {
   if (points.length < 3) return points;
 
   let dmax = 0;
