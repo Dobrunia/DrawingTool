@@ -5,8 +5,8 @@
     <link rel="icon" type="image/svg+xml" href="" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Drawing Tool</title>
-    <script type="module" crossorigin src="/DrawingTool/assets/index-hY6FmIFo.js"></script>
-    <link rel="stylesheet" crossorigin href="/DrawingTool/assets/index-WCSWlsiE.css">
+    <script type="module" crossorigin src="/DrawingTool/assets/index-BL_7nZEi.js"></script>
+    <link rel="stylesheet" crossorigin href="/DrawingTool/assets/index-Cjyzh8Do.css">
   </head>
   <body>
     <section class="drawing-section">
@@ -21,7 +21,7 @@
               <button class="tool-btn bg-secondary border-border-color border-[1px]">Blur</button>
             </div>
           </div>
-          <div class="control mt-[20px]">
+          <div id="color-selector" class="control mt-[20px]">
             <div class="control-name">Color</div>
             <div class="color-selector">
               <button class="color-btn bg-[#FF4C4C]"></button>
@@ -29,17 +29,17 @@
               <button class="color-btn bg-[#10F549]"></button>
               <button class="color-btn bg-[#35A4FF]"></button>
               <button class="color-btn bg-[#A467FF]"></button>
-              <button class="color-btn bg-[#000000] active"></button>
-              <button class="color-btn bg-[#FFFFFF]"></button>
+              <button class="color-btn bg-[#000000]"></button>
+              <button class="color-btn bg-[#FFFFFF] active"></button>
             </div>
           </div>
           <div class="control mt-[20px]">
             <div class="control-name">Size</div>
-            <input class="brush-size" type="range" value="10" min="1" max="20"/>
+            <input class="brush-size" type="range" value="4" min="1" max="40"/>
           </div>
           <div class="control mt-[40px]">
             <div class="mb-[16px] flex">
-              <button id="save" class="w-[58px] h-[36px] py-[8px] px-[12px] rounded-[8px] flex items-center justify-center mr-[12px] bg-blue text-[#FFFFFF]">Save</button>
+              <button id="save" class="w-[58px] h-[36px] py-[8px] px-[12px] rounded-[8px] flex items-center justify-center mr-[12px] bg-blue text-[#FFFFFF] hover:bg-[#145EB8]">Save</button>
               <button id="undo" class="undo-redo"></button>
               <button id="redo" class="undo-redo"></button>
             </div>
