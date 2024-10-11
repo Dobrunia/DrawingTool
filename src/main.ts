@@ -17,6 +17,7 @@ let drawing = false;
 let currentTool: "brush" | "blur" = "brush";
 let color = "#FFFFFF";
 let size = 4;
+let points: { x: number, y: number }[] = [];
 
 undoButton.innerHTML = IconUndo;
 redoButton.innerHTML = IconRedo;
@@ -60,10 +61,8 @@ toolButtons.forEach((button) => {
       (button.textContent?.toLowerCase() as "brush" | "blur") || "brush";
     if (currentTool === "blur") {
       colorSelector.style.display = "none";
-      //cursor.style.border = '2px solid rgba(255, 255, 255, 0.5)';
     } else {
       colorSelector.style.display = "flex";
-      //cursor.style.border = `2px solid ${color}`;
     }
   });
 });
@@ -73,7 +72,6 @@ colorButtons.forEach((button) => {
     colorButtons.forEach((btn) => btn.classList.remove("active"));
     button.classList.add("active");
     color = window.getComputedStyle(button).backgroundColor;
-    //cursor.style.border = `2px solid ${color}`;
   });
 });
 
@@ -90,8 +88,10 @@ canvas.addEventListener("mouseleave", stopDrawing);
 
 function startDrawing(e: MouseEvent) {
   drawing = true;
+  points = [];
   const x = e.clientX - canvas.offsetLeft;
   const y = e.clientY - canvas.offsetTop;
+  points.push({ x, y });
   ctx.beginPath();
   ctx.moveTo(x, y);
 }
@@ -100,6 +100,12 @@ function stopDrawing() {
   if (drawing) {
     drawing = false;
     ctx.closePath();
+
+    if (currentTool === "brush") {
+      const simplifiedPoints = ramerDouglasPeucker(points, 2);
+      redrawSimplifiedLine(simplifiedPoints);
+    }
+
     saveState();
   }
 }
@@ -118,6 +124,7 @@ function draw(e: MouseEvent) {
     ctx.lineTo(x, y);
     ctx.stroke();
     ctx.moveTo(x, y);
+    points.push({ x, y });
   } else if (currentTool === "blur") {
     const blurRadius = size / 2;
     const blurSize = blurRadius * 2;
@@ -179,6 +186,57 @@ function averageColor(neighbors: number[][]): number[] {
   });
   const count = neighbors.length;
   return [total[0] / count, total[1] / count, total[2] / count];
+}
+
+// Алгоритм Рамера-Дугласа-Пекера
+function ramerDouglasPeucker(points: { x: number, y: number }[], epsilon: number) {
+  if (points.length < 3) return points;
+
+  let dmax = 0;
+  let index = 0;
+  const end = points.length - 1;
+
+  for (let i = 1; i < end; i++) {
+    const d = perpendicularDistance(points[i], points[0], points[end]);
+    if (d > dmax) {
+      index = i;
+      dmax = d;
+    }
+  }
+
+  if (dmax > epsilon) {
+    const recResults1 = ramerDouglasPeucker(points.slice(0, index + 1), epsilon);
+    const recResults2 = ramerDouglasPeucker(points.slice(index), epsilon);
+
+    return [...recResults1.slice(0, recResults1.length - 1), ...recResults2];
+  } else {
+    return [points[0], points[end]];
+  }
+}
+
+function perpendicularDistance(point: { x: number, y: number }, lineStart: { x: number, y: number }, lineEnd: { x: number, y: number }) {
+  const dx = lineEnd.x - lineStart.x;
+  const dy = lineEnd.y - lineStart.y;
+
+  const mag = Math.sqrt(dx * dx + dy * dy);
+  const u1 = ((point.x - lineStart.x) * dx + (point.y - lineStart.y) * dy) / (mag * mag);
+
+  const closestPoint = {
+    x: lineStart.x + u1 * dx,
+    y: lineStart.y + u1 * dy,
+  };
+
+  const dist = Math.sqrt((point.x - closestPoint.x) ** 2 + (point.y - closestPoint.y) ** 2);
+  return dist;
+}
+
+function redrawSimplifiedLine(simplifiedPoints: { x: number, y: number }[]) {
+  ctx.beginPath();
+  ctx.moveTo(simplifiedPoints[0].x, simplifiedPoints[0].y);
+  for (let i = 1; i < simplifiedPoints.length; i++) {
+    ctx.lineTo(simplifiedPoints[i].x, simplifiedPoints[i].y);
+  }
+  ctx.stroke();
 }
 
 undoButton.addEventListener("click", undo);
