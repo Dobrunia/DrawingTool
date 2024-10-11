@@ -8,7 +8,7 @@ const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 const sizeInput = document.querySelector(".brush-size") as HTMLInputElement;
 const saveButton = document.getElementById("save") as HTMLElement;
 const toolButtons = document.querySelectorAll(".tool-btn");
-const colorSelector = document.querySelector(".color-selector") as HTMLElement;
+const colorSelector = document.querySelector("#color-selector") as HTMLElement;
 const colorButtons = document.querySelectorAll(".color-btn");
 
 let undoStack: string[] = [];
