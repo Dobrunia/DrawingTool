@@ -31,6 +31,10 @@ body {
   @apply w-max h-[36px] py-[8px] px-[12px] rounded-[8px] flex items-center justify-center mr-[12px]
 }
 
+.tool-btn:hover {
+  @apply border-blue
+}
+
 .tool-btn.active {
   @apply border-blue
 }
@@ -41,6 +45,10 @@ body {
 
 .color-btn {
   @apply w-[24px] h-[24px] rounded-[9px] mr-[12px]
+}
+
+.color-btn:hover {
+  scale: 1.2;
 }
 
 .color-btn.active {
@@ -71,6 +79,10 @@ body {
 
 .undo-redo {
   @apply w-[36px] h-[36px] bg-secondary border-border-color border-[1px] flex items-center justify-center rounded-[8px] mr-[12px]
+}
+
+.undo-redo:hover svg path {
+  @apply stroke-blue
 }
 
 .undo-redo svg {
