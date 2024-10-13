@@ -29,7 +29,9 @@ class DrawingApp {
     this.sizeInput = document.querySelector(".brush-size") as HTMLInputElement;
     this.toolButtons = document.querySelectorAll(".tool-btn");
     this.colorButtons = document.querySelectorAll(".color-btn");
-    this.colorSelector = document.querySelector("#color-selector") as HTMLElement;
+    this.colorSelector = document.querySelector(
+      "#color-selector"
+    ) as HTMLElement;
 
     this.cursor = this.createCursor();
 
@@ -147,20 +149,26 @@ class DrawingApp {
   }
 
   private applyBlur(x: number, y: number) {
-    const blurRadius = this.size / 2;
+    const blurRadius = Math.floor(this.size / 2);
     const blurSize = blurRadius * 2;
-    const imageData = this.ctx.getImageData(x - blurRadius, y - blurRadius, blurSize, blurSize);
-    this.smoothImage(imageData);
+    const imageData = this.ctx.getImageData(
+      x - blurRadius,
+      y - blurRadius,
+      blurSize,
+      blurSize
+    );
+    this.applyGaussianBlur(imageData);
     this.ctx.putImageData(imageData, x - blurRadius, y - blurRadius);
   }
 
-  private smoothImage(imageData: ImageData) {
+  private applyGaussianBlur(imageData: ImageData) {
     const pixels = imageData.data;
     const width = imageData.width;
     const height = imageData.height;
 
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
+    //Gaussian Blur
+    for (let y = 1; y < height - 1; y++) {
+      for (let x = 1; x < width - 1; x++) {
         const index = (y * width + x) * 4;
         const neighbors = this.getNeighborPixels(pixels, width, height, x, y);
         const avg = this.averageColor(neighbors);
@@ -206,7 +214,8 @@ class DrawingApp {
   private selectTool(button: HTMLElement) {
     this.toolButtons.forEach((btn) => btn.classList.remove("active"));
     button.classList.add("active");
-    this.currentTool = (button.textContent?.toLowerCase() as "brush" | "blur") || "brush";
+    this.currentTool =
+      (button.textContent?.toLowerCase() as "brush" | "blur") || "brush";
     if (this.currentTool === "blur") {
       this.colorSelector.style.display = "none";
     } else {
