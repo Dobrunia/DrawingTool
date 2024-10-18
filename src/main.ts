@@ -157,7 +157,7 @@ class DrawingApp {
       blurSize,
       blurSize
     );
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 10; i++) {//кол-во итераций для усиления Blur
       this.applyGaussianBlur(imageData);
     }
     this.ctx.putImageData(imageData, x - blurRadius, y - blurRadius);
