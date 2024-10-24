@@ -19,31 +19,32 @@ class DrawingApp {
   private currentTool: "brush" | "blur" = "brush";
   private color = "#FFFFFF";
   private size = 4;
-
   private points: { x: number; y: number }[] = [];
-
   private offscreenCanvas: HTMLCanvasElement;
   private offscreenCtx: CanvasRenderingContext2D;
-  
-  // Добавляем сетку для отслеживания обработанных точек
-  private processedGrid: boolean[][] = [];
 
   constructor() {
     this.canvas = document.getElementById("drawingCanvas") as HTMLCanvasElement;
-    this.ctx = this.canvas.getContext("2d", { willReadFrequently: true }) as CanvasRenderingContext2D;
+    this.ctx = this.canvas.getContext("2d", {
+      willReadFrequently: true,
+    }) as CanvasRenderingContext2D;
     this.undoButton = document.getElementById("undo") as HTMLElement;
     this.redoButton = document.getElementById("redo") as HTMLElement;
     this.saveButton = document.getElementById("save") as HTMLElement;
     this.sizeInput = document.querySelector(".brush-size") as HTMLInputElement;
     this.toolButtons = document.querySelectorAll(".tool-btn");
     this.colorButtons = document.querySelectorAll(".color-btn");
-    this.colorSelector = document.querySelector("#color-selector") as HTMLElement;
+    this.colorSelector = document.querySelector(
+      "#color-selector"
+    ) as HTMLElement;
 
     this.cursor = this.createCursor();
 
     // Создаем offscreen canvas с параметром willReadFrequently
     this.offscreenCanvas = document.createElement("canvas");
-    this.offscreenCtx = this.offscreenCanvas.getContext("2d", { willReadFrequently: true }) as CanvasRenderingContext2D;
+    this.offscreenCtx = this.offscreenCanvas.getContext("2d", {
+      willReadFrequently: true,
+    }) as CanvasRenderingContext2D;
 
     this.init();
   }
@@ -52,20 +53,6 @@ class DrawingApp {
     this.setupUI();
     this.setupCanvas();
     this.attachEventListeners();
-    this.initializeProcessedGrid();  // Инициализация сетки
-  }
-
-  private initializeProcessedGrid() {
-    const width = this.canvas.width;
-    const height = this.canvas.height;
-
-    // Инициализируем сетку размером холста
-    for (let x = 0; x < width; x++) {
-      this.processedGrid[x] = [];
-      for (let y = 0; y < height; y++) {
-        this.processedGrid[x][y] = false;  // Изначально все точки не обработаны
-      }
-    }
   }
 
   private setupUI() {
@@ -82,6 +69,7 @@ class DrawingApp {
       this.offscreenCanvas.width = img.width;
       this.offscreenCanvas.height = img.height;
       this.ctx.drawImage(img, 0, 0, img.width, img.height);
+      this.offscreenCtx.drawImage(img, 0, 0, img.width, img.height);
       this.saveState();
     };
     this.canvas.style.cursor = "none";
@@ -142,9 +130,15 @@ class DrawingApp {
   private startDrawing(e: MouseEvent) {
     this.drawing = true;
     this.points = [];
-    this.addPoint(e.clientX - this.canvas.offsetLeft, e.clientY - this.canvas.offsetTop);
+    this.addPoint(
+      e.clientX - this.canvas.offsetLeft,
+      e.clientY - this.canvas.offsetTop
+    );
     this.ctx.beginPath();
-    this.ctx.moveTo(e.clientX - this.canvas.offsetLeft, e.clientY - this.canvas.offsetTop);
+    this.ctx.moveTo(
+      e.clientX - this.canvas.offsetLeft,
+      e.clientY - this.canvas.offsetTop
+    );
   }
 
   private stopDrawing() {
@@ -171,7 +165,7 @@ class DrawingApp {
       this.ctx.moveTo(x, y);
     } else if (this.currentTool === "blur") {
       this.addPoint(x, y);
-      this.applyRealtimeBlur();
+      this.applyNativeBlurToAllPoints(); // Применяем размытие сразу к текущей и всем промежуточным точкам
     }
   }
 
@@ -187,7 +181,10 @@ class DrawingApp {
     this.points.push({ x, y });
   }
 
-  private interpolatePoints(p1: { x: number; y: number }, p2: { x: number; y: number }) {
+  private interpolatePoints(
+    p1: { x: number; y: number },
+    p2: { x: number; y: number }
+  ) {
     const distance = this.getDistance(p1, p2);
     const step = 5;
 
@@ -198,106 +195,29 @@ class DrawingApp {
     }
   }
 
-  private getDistance(p1: { x: number; y: number }, p2: { x: number; y: number }) {
+  private getDistance(
+    p1: { x: number; y: number },
+    p2: { x: number; y: number }
+  ) {
     return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
   }
 
-  private applyRealtimeBlur() {
-    this.offscreenCtx.clearRect(0, 0, this.offscreenCanvas.width, this.offscreenCanvas.height);
-    this.offscreenCtx.drawImage(this.canvas, 0, 0);
-
+  // Применение нативного размытия сразу ко всем точкам, включая промежуточные
+  private applyNativeBlurToAllPoints() {
     this.points.forEach((point) => {
-      const blurRadius = Math.floor(this.size / 2);
-      const blurSize = blurRadius * 2;
-
-      // Проверяем, был ли этот участок уже обработан
-      if (this.isAlreadyProcessed(point.x, point.y)) {
-        return; // Если был, пропускаем
-      }
-
-      const imageData = this.offscreenCtx.getImageData(
-        point.x - blurRadius,
-        point.y - blurRadius,
-        blurSize,
-        blurSize
-      );
-
-      for (let i = 0; i < 10; i++) {
-        this.applyGaussianBlur(imageData);
-      }
-
-      this.offscreenCtx.putImageData(imageData, point.x - blurRadius, point.y - blurRadius);
-
-      // Помечаем область как обработанную
-      this.markAsProcessed(point.x, point.y);
+      this.applyNativeBlur(point.x, point.y);
     });
+  }
 
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+  private applyNativeBlur(x: number, y: number) {
+    const blurRadius = this.size / 2;
+    this.ctx.save();
+    this.ctx.filter = `blur(${blurRadius}px)`;
+    this.ctx.beginPath();
+    this.ctx.arc(x, y, blurRadius, 0, Math.PI * 2);
+    this.ctx.clip();
     this.ctx.drawImage(this.offscreenCanvas, 0, 0);
-  }
-
-  // Функция для проверки, был ли этот участок обработан
-  private isAlreadyProcessed(x: number, y: number): boolean {
-    const gridX = Math.floor(x / 5); // Шаг сетки 5 пикселей
-    const gridY = Math.floor(y / 5);
-    return this.processedGrid[gridX] && this.processedGrid[gridX][gridY];
-  }
-
-  // Помечаем участок как обработанный
-  private markAsProcessed(x: number, y: number) {
-    const gridX = Math.floor(x / 5); // Шаг сетки 5 пикселей
-    const gridY = Math.floor(y / 5);
-    this.processedGrid[gridX] = this.processedGrid[gridX] || [];
-    this.processedGrid[gridX][gridY] = true;
-  }
-
-  private applyGaussianBlur(imageData: ImageData) {
-    const pixels = imageData.data;
-    const width = imageData.width;
-    const height = imageData.height;
-
-    for (let y = 1; y < height - 1; y++) {
-      for (let x = 1; x < width - 1; x++) {
-        const index = (y * width + x) * 4;
-        const neighbors = this.getNeighborPixels(pixels, width, height, x, y);
-        const avg = this.averageColor(neighbors);
-        pixels[index] = avg[0];
-        pixels[index + 1] = avg[1];
-        pixels[index + 2] = avg[2];
-      }
-    }
-  }
-
-  private getNeighborPixels(
-    pixels: Uint8ClampedArray,
-    width: number,
-    height: number,
-    x: number,
-    y: number
-  ): number[][] {
-    const neighbors: number[][] = [];
-    for (let dy = -1; dy <= 1; dy++) {
-      for (let dx = -1; dx <= 1; dx++) {
-        const nx = x + dx;
-        const ny = y + dy;
-        if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
-          const index = (ny * width + nx) * 4;
-          neighbors.push([pixels[index], pixels[index + 1], pixels[index + 2]]);
-        }
-      }
-    }
-    return neighbors;
-  }
-
-  private averageColor(neighbors: number[][]): number[] {
-    const total = [0, 0, 0];
-    neighbors.forEach((color) => {
-      total[0] += color[0];
-      total[1] += color[1];
-      total[2] += color[2];
-    });
-    const count = neighbors.length;
-    return [total[0] / count, total[1] / count, total[2] / count];
+    this.ctx.restore();
   }
 
   private selectTool(button: HTMLElement) {
