@@ -19,7 +19,7 @@ class DrawingApp {
   private currentTool: "brush" | "blur" = "brush";
   private color = "#FFFFFF";
   private size = 4;
-  private points: { x: number; y: number }[] = [];
+
   private offscreenCanvas: HTMLCanvasElement;
   private offscreenCtx: CanvasRenderingContext2D;
 
@@ -69,7 +69,7 @@ class DrawingApp {
       this.offscreenCanvas.width = img.width;
       this.offscreenCanvas.height = img.height;
       this.ctx.drawImage(img, 0, 0, img.width, img.height);
-      this.offscreenCtx.drawImage(img, 0, 0, img.width, img.height);
+      this.offscreenCtx.drawImage(img, 0, 0, img.width, img.height); // Копируем изображение на offscreen холст
       this.saveState();
     };
     this.canvas.style.cursor = "none";
@@ -100,15 +100,12 @@ class DrawingApp {
     this.canvas.addEventListener("mouseup", () => this.stopDrawing());
     this.canvas.addEventListener("mousemove", (e) => this.draw(e));
     this.canvas.addEventListener("mouseleave", () => this.stopDrawing());
-
     this.toolButtons.forEach((button) => {
       button.addEventListener("click", () => this.selectTool(button));
     });
-
     this.colorButtons.forEach((button) => {
       button.addEventListener("click", () => this.selectColor(button));
     });
-
     this.undoButton.addEventListener("click", () => this.undo());
     this.redoButton.addEventListener("click", () => this.redo());
     this.saveButton.addEventListener("click", () => this.saveCanvas());
@@ -129,11 +126,6 @@ class DrawingApp {
 
   private startDrawing(e: MouseEvent) {
     this.drawing = true;
-    this.points = [];
-    this.addPoint(
-      e.clientX - this.canvas.offsetLeft,
-      e.clientY - this.canvas.offsetTop
-    );
     this.ctx.beginPath();
     this.ctx.moveTo(
       e.clientX - this.canvas.offsetLeft,
@@ -164,49 +156,8 @@ class DrawingApp {
       this.ctx.stroke();
       this.ctx.moveTo(x, y);
     } else if (this.currentTool === "blur") {
-      this.addPoint(x, y);
-      this.applyNativeBlurToAllPoints(); // Применяем размытие сразу к текущей и всем промежуточным точкам
+      this.applyNativeBlur(x, y);
     }
-  }
-
-  private addPoint(x: number, y: number) {
-    const lastPoint = this.points[this.points.length - 1];
-    if (lastPoint) {
-      const distance = this.getDistance(lastPoint, { x, y });
-
-      if (distance > 5) {
-        this.interpolatePoints(lastPoint, { x, y });
-      }
-    }
-    this.points.push({ x, y });
-  }
-
-  private interpolatePoints(
-    p1: { x: number; y: number },
-    p2: { x: number; y: number }
-  ) {
-    const distance = this.getDistance(p1, p2);
-    const step = 5;
-
-    for (let t = 0; t < distance; t += step) {
-      const x = p1.x + (p2.x - p1.x) * (t / distance);
-      const y = p1.y + (p2.y - p1.y) * (t / distance);
-      this.points.push({ x, y });
-    }
-  }
-
-  private getDistance(
-    p1: { x: number; y: number },
-    p2: { x: number; y: number }
-  ) {
-    return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
-  }
-
-  // Применение нативного размытия сразу ко всем точкам, включая промежуточные
-  private applyNativeBlurToAllPoints() {
-    this.points.forEach((point) => {
-      this.applyNativeBlur(point.x, point.y);
-    });
   }
 
   private applyNativeBlur(x: number, y: number) {
