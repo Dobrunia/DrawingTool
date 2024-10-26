@@ -1,66 +1,59 @@
 import "./style.css";
 import { IconUndo, IconRedo } from "@codexteam/icons";
 
-class DrawingApp {
-  private canvas: HTMLCanvasElement;
-  private ctx: CanvasRenderingContext2D;
-  private undoButton: HTMLElement;
-  private redoButton: HTMLElement;
-  private saveButton: HTMLElement;
-  private sizeInput: HTMLInputElement;
-  private toolButtons: NodeListOf<HTMLElement>;
-  private colorButtons: NodeListOf<HTMLElement>;
-  private colorSelector: HTMLElement;
-  private cursor: HTMLElement;
+export class BaseDrawingApp {
+  protected canvas: HTMLCanvasElement;
+  protected ctx: CanvasRenderingContext2D;
+  protected undoButton: HTMLElement;
+  protected redoButton: HTMLElement;
+  protected saveButton: HTMLElement;
+  protected sizeInput: HTMLInputElement;
+  protected toolButtons: NodeListOf<HTMLElement>;
+  protected colorButtons: NodeListOf<HTMLElement>;
+  protected colorSelector: HTMLElement;
+  protected cursor: HTMLElement;
 
-  private undoStack: string[] = [];
-  private redoStack: string[] = [];
-  private drawing = false;
-  private currentTool: "brush" | "blur" = "brush";
-  private color = "#FFFFFF";
-  private size = 4;
+  protected undoStack: string[] = [];
+  protected redoStack: string[] = [];
+  protected drawing = false;
+  protected currentTool: "brush" | "blur" = "brush";
+  protected color = "#FFFFFF";
+  protected size = 4;
 
-  private offscreenCanvas: HTMLCanvasElement;
-  private offscreenCtx: CanvasRenderingContext2D;
+  protected offscreenCanvas: HTMLCanvasElement;
+  protected offscreenCtx: CanvasRenderingContext2D;
 
   constructor() {
     this.canvas = document.getElementById("drawingCanvas") as HTMLCanvasElement;
-    this.ctx = this.canvas.getContext("2d", {
-      willReadFrequently: true,
-    }) as CanvasRenderingContext2D;
+    this.ctx = this.canvas.getContext("2d", { willReadFrequently: true }) as CanvasRenderingContext2D;
     this.undoButton = document.getElementById("undo") as HTMLElement;
     this.redoButton = document.getElementById("redo") as HTMLElement;
     this.saveButton = document.getElementById("save") as HTMLElement;
     this.sizeInput = document.querySelector(".brush-size") as HTMLInputElement;
     this.toolButtons = document.querySelectorAll(".tool-btn");
     this.colorButtons = document.querySelectorAll(".color-btn");
-    this.colorSelector = document.querySelector(
-      "#color-selector"
-    ) as HTMLElement;
+    this.colorSelector = document.querySelector("#color-selector") as HTMLElement;
 
     this.cursor = this.createCursor();
 
-    // Создаем offscreen canvas с параметром willReadFrequently
     this.offscreenCanvas = document.createElement("canvas");
-    this.offscreenCtx = this.offscreenCanvas.getContext("2d", {
-      willReadFrequently: true,
-    }) as CanvasRenderingContext2D;
+    this.offscreenCtx = this.offscreenCanvas.getContext("2d", { willReadFrequently: true }) as CanvasRenderingContext2D;
 
     this.init();
   }
 
-  private init() {
+  protected init() {
     this.setupUI();
     this.setupCanvas();
     this.attachEventListeners();
   }
 
-  private setupUI() {
+  protected setupUI() {
     this.undoButton.innerHTML = IconUndo;
     this.redoButton.innerHTML = IconRedo;
   }
 
-  private setupCanvas() {
+  protected setupCanvas() {
     const img = new Image();
     img.src = "1.png";
     img.onload = () => {
@@ -69,13 +62,13 @@ class DrawingApp {
       this.offscreenCanvas.width = img.width;
       this.offscreenCanvas.height = img.height;
       this.ctx.drawImage(img, 0, 0, img.width, img.height);
-      this.offscreenCtx.drawImage(img, 0, 0, img.width, img.height); // Копируем изображение на offscreen холст
+      this.offscreenCtx.drawImage(img, 0, 0, img.width, img.height);
       this.saveState();
     };
     this.canvas.style.cursor = "none";
   }
 
-  private createCursor(): HTMLElement {
+  protected createCursor(): HTMLElement {
     const cursor = document.createElement("div");
     cursor.style.position = "absolute";
     cursor.style.borderRadius = "50%";
@@ -87,7 +80,7 @@ class DrawingApp {
     return cursor;
   }
 
-  private attachEventListeners() {
+  protected attachEventListeners() {
     this.canvas.addEventListener("mouseenter", () => {
       this.cursor.style.display = "block";
     });
@@ -111,7 +104,7 @@ class DrawingApp {
     this.saveButton.addEventListener("click", () => this.saveCanvas());
   }
 
-  private updateCursor(e: MouseEvent) {
+  protected updateCursor(e: MouseEvent) {
     const x = e.clientX - this.size / 2;
     const y = e.clientY - this.size / 2;
     this.cursor.style.left = `${x}px`;
@@ -120,20 +113,17 @@ class DrawingApp {
     this.cursor.style.height = `${this.size}px`;
   }
 
-  private updateBrushSize() {
+  protected updateBrushSize() {
     this.size = Number(this.sizeInput.value);
   }
 
-  private startDrawing(e: MouseEvent) {
+  protected startDrawing(e: MouseEvent) {
     this.drawing = true;
     this.ctx.beginPath();
-    this.ctx.moveTo(
-      e.clientX - this.canvas.offsetLeft,
-      e.clientY - this.canvas.offsetTop
-    );
+    this.ctx.moveTo(e.clientX - this.canvas.offsetLeft, e.clientY - this.canvas.offsetTop);
   }
 
-  private stopDrawing() {
+  protected stopDrawing() {
     if (this.drawing) {
       this.drawing = false;
       this.ctx.closePath();
@@ -141,7 +131,7 @@ class DrawingApp {
     }
   }
 
-  private draw(e: MouseEvent) {
+  protected draw(e: MouseEvent) {
     if (!this.drawing) return;
 
     const x = e.clientX - this.canvas.offsetLeft;
@@ -156,11 +146,67 @@ class DrawingApp {
       this.ctx.stroke();
       this.ctx.moveTo(x, y);
     } else if (this.currentTool === "blur") {
-      this.applyNativeBlur(x, y);
+      this.applyBlur(x, y);
     }
   }
 
-  private applyNativeBlur(x: number, y: number) {
+  protected applyBlur(x: number, y: number) {
+    // Базовый метод, будет переопределен в наследниках
+  }
+
+  protected selectTool(button: HTMLElement) {
+    this.toolButtons.forEach((btn) => btn.classList.remove("active"));
+    button.classList.add("active");
+    this.currentTool = (button.textContent?.toLowerCase() as "brush" | "blur") || "brush";
+    this.colorSelector.style.display = this.currentTool === "blur" ? "none" : "flex";
+  }
+
+  protected selectColor(button: HTMLElement) {
+    this.colorButtons.forEach((btn) => btn.classList.remove("active"));
+    button.classList.add("active");
+    this.color = window.getComputedStyle(button).backgroundColor;
+  }
+
+  protected saveState() {
+    this.redoStack = [];
+    this.undoStack.push(this.canvas.toDataURL());
+  }
+
+  protected undo() {
+    if (this.undoStack.length > 0) {
+      this.redoStack.push(this.undoStack.pop() as string);
+      const imageDataUrl = this.undoStack[this.undoStack.length - 1] || "1.png";
+      this.loadCanvasFromUrl(imageDataUrl);
+    }
+  }
+
+  protected redo() {
+    if (this.redoStack.length > 0) {
+      const imageDataUrl = this.redoStack.pop() as string;
+      this.undoStack.push(imageDataUrl);
+      this.loadCanvasFromUrl(imageDataUrl);
+    }
+  }
+
+  protected loadCanvasFromUrl(url: string) {
+    const image = new Image();
+    image.src = url;
+    image.onload = () => {
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      this.ctx.drawImage(image, 0, 0);
+    };
+  }
+
+  protected saveCanvas() {
+    const link = document.createElement("a");
+    link.download = "canvas-image.png";
+    link.href = this.canvas.toDataURL();
+    link.click();
+  }
+}
+
+class ChromeDrawingApp extends BaseDrawingApp {
+  protected applyBlur(x: number, y: number) {
     const blurRadius = this.size / 2;
     this.ctx.save();
     this.ctx.filter = `blur(${blurRadius}px)`;
@@ -170,63 +216,21 @@ class DrawingApp {
     this.ctx.drawImage(this.offscreenCanvas, 0, 0);
     this.ctx.restore();
   }
+}
 
-  private selectTool(button: HTMLElement) {
-    this.toolButtons.forEach((btn) => btn.classList.remove("active"));
-    button.classList.add("active");
-    this.currentTool =
-      (button.textContent?.toLowerCase() as "brush" | "blur") || "brush";
-    if (this.currentTool === "blur") {
-      this.colorSelector.style.display = "none";
-    } else {
-      this.colorSelector.style.display = "flex";
-    }
-  }
-
-  private selectColor(button: HTMLElement) {
-    this.colorButtons.forEach((btn) => btn.classList.remove("active"));
-    button.classList.add("active");
-    this.color = window.getComputedStyle(button).backgroundColor;
-  }
-
-  private saveState() {
-    this.redoStack = [];
-    this.undoStack.push(this.canvas.toDataURL());
-  }
-
-  private undo() {
-    if (this.undoStack.length > 0) {
-      this.redoStack.push(this.undoStack.pop() as string);
-      const imageDataUrl = this.undoStack[this.undoStack.length - 1] || "1.png";
-      this.loadCanvasFromUrl(imageDataUrl);
-    }
-  }
-
-  private redo() {
-    if (this.redoStack.length > 0) {
-      const imageDataUrl = this.redoStack.pop() as string;
-      this.undoStack.push(imageDataUrl);
-      this.loadCanvasFromUrl(imageDataUrl);
-    }
-  }
-
-  private loadCanvasFromUrl(url: string) {
-    const image = new Image();
-    image.src = url;
-    image.onload = () => {
-      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-      this.ctx.drawImage(image, 0, 0);
-    };
-  }
-
-  private saveCanvas() {
-    const link = document.createElement("a");
-    link.download = "canvas-image.png";
-    link.href = this.canvas.toDataURL();
-    link.click();
+class SafariDrawingApp extends BaseDrawingApp {
+  protected applyBlur(x: number, y: number) {
+    const blurRadius = this.size / 2;
+    this.ctx.globalAlpha = 0.3;
+    this.ctx.fillStyle = this.color;
+    this.ctx.beginPath();
+    this.ctx.arc(x, y, blurRadius, 0, Math.PI * 2);
+    this.ctx.fill();
+    this.ctx.globalAlpha = 1;
   }
 }
 
 window.onload = () => {
-  new DrawingApp();
+  const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+  const app = isChrome ? new ChromeDrawingApp() : new SafariDrawingApp();
 };
